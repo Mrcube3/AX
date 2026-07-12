@@ -1,0 +1,7 @@
+.DS_Store
+.data/
+.cache/
+.pnpm-home/
+.pnpm-store/
+node_modules/
+.env

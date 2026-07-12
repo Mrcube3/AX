@@ -1,0 +1,6 @@
+.data
+.cache
+.pnpm-home
+.pnpm-store
+.git
+node_modules
