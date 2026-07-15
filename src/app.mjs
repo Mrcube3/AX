@@ -88,6 +88,28 @@ export function createHandler({ config, store }) {
       return sendJson(res, 200, order, id);
     }
 
+    if (pathname === "/api/dir" && req.method === "GET") {
+      const { readdirSync, statSync } = await import("fs");
+      const { fileURLToPath } = await import("url");
+      const searchPaths = [
+        "/var/task",
+        config.root,
+        process.cwd(),
+        fileURLToPath(import.meta.url),
+      ];
+      const result = {};
+      for (const p of searchPaths) {
+        try {
+          const entries = readdirSync(p);
+          result[p] = entries.slice(0, 80).map(e => {
+            try { const s = statSync(p + "/" + e); return e + (s.isDirectory() ? "/" : ""); }
+            catch { return e; }
+          });
+        } catch { result[p] = null; }
+      }
+      return sendJson(res, 200, result, id);
+    }
+
     return sendJson(res, 404, { error: "Not found" }, id);
   }
 
