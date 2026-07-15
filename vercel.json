@@ -4,9 +4,23 @@
     {
       "src": "api/index.mjs",
       "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.json",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "api/index.mjs" }
+    { "src": "/api/(.*)", "dest": "api/index.mjs" },
+    { "src": "/", "dest": "/finance-copilot-asp.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }

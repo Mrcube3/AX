@@ -15,14 +15,12 @@ export function createHandler({ config, store }) {
 
   async function handleApi(req, res, pathname, id) {
     if (pathname === "/api/health" && req.method === "GET") {
-      const extra = process.env.VERCEL ? { cwd: process.cwd(), root: config.root } : {};
       return sendJson(res, 200, {
         ok: true,
         service: "ledgerpilot-asp",
         version: "0.1.0",
         env: config.nodeEnv,
-        uptime: Math.round(process.uptime()),
-        ...extra
+        uptime: Math.round(process.uptime())
       }, id);
     }
 
@@ -35,18 +33,8 @@ export function createHandler({ config, store }) {
     }
 
     if (pathname === "/api/listing" && req.method === "GET") {
-      try {
-        const listing = JSON.parse(await readFile(join(config.root, "okx-asp-listing.json"), "utf8"));
-        return sendJson(res, 200, listing, id);
-      } catch {
-        const { readdirSync } = await import("fs");
-        const { fileURLToPath } = await import("url");
-        const meta = fileURLToPath(import.meta.url);
-        let dirs = {};
-        try { dirs["/var/task"] = readdirSync("/var/task"); } catch {}
-        try { dirs["/var/task/src"] = readdirSync("/var/task/src"); } catch {}
-        return sendJson(res, 500, { error: "Listing failed", root: config.root, meta, cwd: process.cwd(), dirs }, id);
-      }
+      const listing = JSON.parse(await readFile(join(config.root, "okx-asp-listing.json"), "utf8"));
+      return sendJson(res, 200, listing, id);
     }
 
     if ((pathname === "/api/quote" || pathname === "/api/report") && req.method === "POST") {
@@ -86,28 +74,6 @@ export function createHandler({ config, store }) {
       const order = await store.get(orderMatch[1]);
       if (!order) return sendJson(res, 404, { error: "Order not found" }, id);
       return sendJson(res, 200, order, id);
-    }
-
-    if (pathname === "/api/dir" && req.method === "GET") {
-      const { readdirSync, statSync } = await import("fs");
-      const { fileURLToPath } = await import("url");
-      const searchPaths = [
-        "/var/task",
-        config.root,
-        process.cwd(),
-        fileURLToPath(import.meta.url),
-      ];
-      const result = {};
-      for (const p of searchPaths) {
-        try {
-          const entries = readdirSync(p);
-          result[p] = entries.slice(0, 80).map(e => {
-            try { const s = statSync(p + "/" + e); return e + (s.isDirectory() ? "/" : ""); }
-            catch { return e; }
-          });
-        } catch { result[p] = null; }
-      }
-      return sendJson(res, 200, result, id);
     }
 
     return sendJson(res, 404, { error: "Not found" }, id);
