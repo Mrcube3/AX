@@ -1,8 +1,7 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { services } from "./catalog.mjs";
+import listing from "./listing.mjs";
 import { clampText, normalizeInput, quoteFor, reportFor, walletProfileFor } from "./engine.mjs";
 import { createRateLimiter, readJsonBody, requestId, sendJson, serveStatic } from "./http.mjs";
 import { checkOnchainOS } from "./onchainos.mjs";
@@ -33,7 +32,6 @@ export function createHandler({ config, store }) {
     }
 
     if (pathname === "/api/listing" && req.method === "GET") {
-      const listing = JSON.parse(await readFile(join(config.root, "okx-asp-listing.json"), "utf8"));
       return sendJson(res, 200, listing, id);
     }
 
