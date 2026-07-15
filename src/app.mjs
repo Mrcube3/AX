@@ -7,7 +7,7 @@ import { clampText, normalizeInput, quoteFor, reportFor, walletProfileFor } from
 import { createRateLimiter, readJsonBody, requestId, sendJson, serveStatic } from "./http.mjs";
 import { checkOnchainOS } from "./onchainos.mjs";
 
-export function createApp({ config, store }) {
+export function createHandler({ config, store }) {
   const rateLimit = createRateLimiter({
     windowMs: config.rateLimitWindowMs,
     max: config.rateLimitMax
@@ -79,7 +79,7 @@ export function createApp({ config, store }) {
     return sendJson(res, 404, { error: "Not found" }, id);
   }
 
-  return createServer(async (req, res) => {
+  return async function handler(req, res) {
     const id = requestId(req);
     const startedAt = Date.now();
     try {
@@ -88,8 +88,7 @@ export function createApp({ config, store }) {
         res.setHeader("retry-after", String(limited.retryAfter));
         return sendJson(res, 429, { error: "Rate limit exceeded" }, id);
       }
-
-      const url = new URL(req.url || "/", `http://${req.headers.host || `${config.host}:${config.port}`}`);
+      const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
       if (url.pathname.startsWith("/api/")) {
         await handleApi(req, res, url.pathname, id);
       } else if (req.method === "GET" || req.method === "HEAD") {
@@ -110,5 +109,10 @@ export function createApp({ config, store }) {
         }));
       }
     }
-  });
+  };
+}
+
+export function createApp({ config, store }) {
+  const handler = createHandler({ config, store });
+  return createServer(handler);
 }
