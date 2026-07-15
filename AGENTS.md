@@ -23,4 +23,10 @@
 - GitHub: `Mrcube3`
 - SSH key at `~/.ssh/id_ed25519` — added to GitHub and ssh-agent
 - Always use SSH remote URLs (`git@github.com:user/repo.git`)
-`
+
+## Vercel
+
+- Project repo: `git@github.com:Mrcube3/AX.git`
+- Vercel entry: `api/index.mjs` (serverless handler)
+- Config: `vercel.json` routes all paths through the Node.js handler
+- Locally: `node server.mjs` (uses `createApp` from `src/app.mjs`)
