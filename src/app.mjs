@@ -35,8 +35,18 @@ export function createHandler({ config, store }) {
     }
 
     if (pathname === "/api/listing" && req.method === "GET") {
-      const listing = JSON.parse(await readFile(join(config.root, "okx-asp-listing.json"), "utf8"));
-      return sendJson(res, 200, listing, id);
+      try {
+        const listing = JSON.parse(await readFile(join(config.root, "okx-asp-listing.json"), "utf8"));
+        return sendJson(res, 200, listing, id);
+      } catch {
+        const { readdirSync } = await import("fs");
+        const { fileURLToPath } = await import("url");
+        const meta = fileURLToPath(import.meta.url);
+        let dirs = {};
+        try { dirs["/var/task"] = readdirSync("/var/task"); } catch {}
+        try { dirs["/var/task/src"] = readdirSync("/var/task/src"); } catch {}
+        return sendJson(res, 500, { error: "Listing failed", root: config.root, meta, cwd: process.cwd(), dirs }, id);
+      }
     }
 
     if ((pathname === "/api/quote" || pathname === "/api/report") && req.method === "POST") {
