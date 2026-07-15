@@ -15,12 +15,14 @@ export function createHandler({ config, store }) {
 
   async function handleApi(req, res, pathname, id) {
     if (pathname === "/api/health" && req.method === "GET") {
+      const extra = process.env.VERCEL ? { cwd: process.cwd(), root: config.root } : {};
       return sendJson(res, 200, {
         ok: true,
         service: "ledgerpilot-asp",
         version: "0.1.0",
         env: config.nodeEnv,
-        uptime: Math.round(process.uptime())
+        uptime: Math.round(process.uptime()),
+        ...extra
       }, id);
     }
 
